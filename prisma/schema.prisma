@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  title            String
+  municipality     String
+  country          String?
+  ipaWindow        String?
+  budget           String?
+  duration         String?
+  description      String?
+  objectives       String?
+  methodology      String?
+  smartSpecific    String?
+  smartMeasurable  String?
+  smartAchievable  String?
+  smartRelevant    String?
+  smartTimeBound   String?
+  risks            String?
+  sustainability   String?
+  mode             String   @default("template")
+  language         String   @default("en")
+  complianceScore  Int      @default(0)
+  status           String   @default("draft")
+
+  // IPA III Performance Assessment Fields
+  relevanceScore         Int?      // Strategic alignment score (0-100)
+  maturityScore          Int?      // Implementation readiness (0-100)
+  performanceScore       Int?      // Combined weighted score
+  climateContribution    Float?    // Percentage of budget for climate
+  performanceIndicators  String?   // JSON string of indicators
+  crossCuttingPriorities String?   // JSON string of priorities scores
+  coFinancingStructure   String?   // JSON string of funding breakdown
+  implementationPhase    String?   // Planning/Implementation/Monitoring
+  resultIndicators       String?   // JSON string of expected vs actual
+
+  // Additional IPA III Fields
+  totalBudget           Float?    // Total budget in EUR
+  euContribution        Float?    // EU contribution in EUR
+  partnerContribution   Float?    // Partner contribution in EUR
+  leadPartner           String?   // Lead organization
+  partners              String?   // JSON array of partner organizations
+  activities            String?   // Detailed activity list
+  deliverables          String?   // Project deliverables
+  timeline              String?   // Implementation timeline
+  milestones            String?   // Key milestones
+  monitoringPlan        String?   // M&E framework
+  evaluationApproach    String?   // Evaluation methodology
+  technicalSpecs        String?   // Technical specifications
+  feasibilityStudy      String?   // Feasibility study reference
+  preparatoryWork       String?   // Preparatory work done
+  partnerExperience     String?   // Partner track record
+  partnerRoles          String?   // Partner responsibilities
+  mitigation            String?   // Risk mitigation strategies
+  budgetBreakdown       String?   // Detailed budget breakdown
+  phases                String?   // Implementation phases
+  indicators            String?   // Performance indicators
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  aiResponses      AIResponse[]
+  sessions         Session[]
+  performanceAssessments PerformanceAssessment[]
+}
+
+model AIResponse {
+  id          String   @id @default(cuid())
+  projectId   String
+  field       String
+  prompt      String
+  response    String
+  language    String
+  model       String   @default("x-ai/grok-4-fast:free")
+  cached      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, field])
+  @@index([createdAt])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  projectId   String
+  ipAddress   String?
+  userAgent   String?
+  lastActive  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([lastActive])
+}
+
+model AICache {
+  id          String   @id @default(cuid())
+  cacheKey    String   @unique
+  field       String
+  context     String
+  response    String
+  model       String
+  hits        Int      @default(0)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([cacheKey])
+  @@index([field])
+  @@index([expiresAt])
+}
+
+model PerformanceAssessment {
+  id                     String   @id @default(cuid())
+  projectId              String
+  relevanceScore         Int      // Strategic alignment (0-100)
+  maturityScore          Int      // Implementation readiness (0-100)
+  performanceScore       Int      // Combined score
+  climateContribution    Float    // % of budget for climate
+  crossCuttingPriorities String   // JSON of priority scores
+  indicators             String   // JSON of performance indicators
+  recommendations        String   // JSON array of recommendations
+  complianceStatus       String   // Overall compliance status
+  assessmentDate         DateTime @default(now())
+  assessedBy             String?  // Who performed assessment
+  notes                  String?  // Additional notes
+
+  // Relations
+  project                Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([assessmentDate])
+}
