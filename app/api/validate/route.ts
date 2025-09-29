@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateProjectExcellence, validateField } from '@/lib/excellence-validation';
 
-// export const runtime = 'edge' // Disabled for static export
+export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
   try {

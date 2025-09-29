@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateAIContent, autoFillSection } from '@/lib/ai-service'
 
-// export const runtime = 'edge' // Disabled for static export
+export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
   try {
